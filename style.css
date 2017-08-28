@@ -7,6 +7,7 @@ body {
   margin: 0;
   background-color: black;
   color: #fff;
+  font-family: "Roboto Slab", Helvetica;
 }
 
 .interim {
@@ -84,9 +85,11 @@ body {
 .info-upgrade {
     position: absolute;
     top: 100px;
-    width: 100%;
+    width: 80%;
     border: 2px solid black;
     padding: 50px;
     background-color: white;
     color: black;
+    text-align: center;
+    z-index: 1000;
 }

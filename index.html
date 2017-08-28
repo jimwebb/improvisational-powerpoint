@@ -7,6 +7,8 @@
       Pictogram Demo
     </title>
     
+    <link rel="stylesheet" href="style.css">
+
     <!-- Hide referrer so we don't get dinged for hotlinking directly to images -->
     <meta name="referrer" content="no-referrer" />
 
@@ -87,7 +89,7 @@ function toggle() {
 }
 
 if (!('webkitSpeechRecognition' in window)) {
-  $('.info_upgrade').show();
+  $('.info-upgrade').show();
 } else {
 
   var recognition = new webkitSpeechRecognition();
