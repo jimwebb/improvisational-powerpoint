@@ -66,14 +66,25 @@ var all_phrases = [];
 function start(event) {
   if (recognizing) {
     recognition.stop();
-    return;
   }
-  final_transcript = '';
   recognition.lang = 'en-US';
   recognition.start();
-  ignore_onend = false;
 }
 
+function stop() {
+  if (recognizing) {
+    recognition.stop();
+    return;
+  }
+}
+
+function toggle() {
+  if (recognizing) {
+    stop();
+    return;
+  }
+  start();
+}
 
 if (!('webkitSpeechRecognition' in window)) {
   $('.info_upgrade').show();
@@ -138,16 +149,19 @@ if (!('webkitSpeechRecognition' in window)) {
 // Handle a phrase that needs a photo. 
 function process_new_phrase( phrase ) {
 
-  console.log('processing', phrase);
-  
-  // filter the words against the NLP; come back with a good searchable term
+  console.log('processing phrase: ', phrase);
+
   var term = filter_word( phrase );
   if ( !term ) return false;
-  
-  // don't show the same term twice in a row
-  if ( !deduplicate_term( term ) ) return false;
 
-  // add this term to the master list (so we don't show them more than once in quick succession)
+  console.log('term found: ', term );
+
+  if ( !deduplicate_term( term ) ) {
+    console.log ("this is a duplicate! exiting.")
+    return false;
+  }
+
+  // add this term to the list
   all_phrases.push( term );
 
   console.log('finding image: ', term, 'via phrase: ', phrase);
@@ -155,7 +169,7 @@ function process_new_phrase( phrase ) {
   // get the photo from Flickr 
   $.getJSON( "https://api.flickr.com/services/rest/", 
             { method: 'flickr.photos.search',
-              api_key: '43cc03eb3467195ae9b8ec35d994d379',
+              api_key: '29ae485737f80c225ff98915dc3361b8',
               text: term,
               sort: 'relevance',
               safe_search: 1,
@@ -212,15 +226,29 @@ function filter_word( phrase ) {
 
   // using Compromise, get the topics, then nouns from the phrase
   var phrases = nlp(phrase);
-  if ( !phrases ) return phrase;
+  if ( !phrases ) {
+    console.log ('could not parse a phrase:', phrase);
+    return false;
+  }
 
   var topics = phrases.topics().out('array');
-  if ( topics.length ) return topics.slice(-1)[0]; // return the final element of the array; the final phrase spoken
+  if ( topics.length ) {
+    console.log('found topics:', topics);
+    return topics.slice(-1)[0]; // return the final element of the array
+  }
   
   var nouns = phrases.nouns().out('array');
-  if ( nouns.length ) return nouns.slice(-1)[0];
+  if ( nouns.length ) {
+    console.log('found nouns:', nouns);
+    return nouns.slice(-1)[0];
+  }
 
-  return phrase;
+  console.log('no terms found:', phrases.nouns().out() );
+
+  var verbs = phrases.verbs().out('array');
+  if ( verbs.length ) return verbs.slice(-1)[0];
+
+  return phrase; // search it anyway
 }
 
 
@@ -262,13 +290,29 @@ function add_image(url, phrase) {
 
 // use spacebar to show/hide captioned text
 $( document ).keypress(function( event ) {
-  // console.log(event.which);
+  console.log("keypress", event.which);
   if ( event.which == 99 ) {
      $('#captioned-text').fadeToggle();
   }
+
+  if ( event.which == 32 ) {
+    toggle();
+  }
+
+
+
 });
 
 </script>
 
-</body>
-</html>
+        <!-- Google Analytics -->
+        <script>
+            (function(b,o,i,l,e,r){b.GoogleAnalyticsObject=l;b[l]||(b[l]=
+            function(){(b[l].q=b[l].q||[]).push(arguments)});b[l].l=+new Date;
+            e=o.createElement(i);r=o.getElementsByTagName(i)[0];
+            e.src='https://www.google-analytics.com/analytics.js';
+            r.parentNode.insertBefore(e,r)}(window,document,'script','ga'));
+            ga('create','UA-343108-11','auto');ga('send','pageview');
+        </script>
+
+</body></html>
