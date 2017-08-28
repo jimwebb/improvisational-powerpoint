@@ -1,0 +1,92 @@
+body, html {
+  height: 100%;
+}
+
+body {
+  padding: 0;
+  margin: 0;
+  background-color: black;
+  color: #fff;
+}
+
+.interim {
+  color: #999;
+}
+
+.carousel {
+  height: 100vh;
+  text-align: center;
+  width: 100%;
+}
+
+.carousel-cell {
+  text-align: center;
+  height: 100vh;
+  margin: 0;
+  width: 100%;
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center center;
+}
+
+.carousel-cell img {
+  max-width: 100%;
+  height: auto;
+}
+
+.caption {
+  text-align: center;
+  text-transform: uppercase;
+  margin-top: 0.5em;
+  position: absolute;
+  top: 6%;
+  left: 0;
+  right: 0;
+}
+
+.caption span {
+  font-family: "League Gothic", LeagueGothic, Helvetica;
+  font-size: 15vh;
+  background-color: rgba(0,0,0,0.5);
+  color: white;
+  padding: 0.2em;
+  display: inline-block;
+}
+
+#captioned-text {
+  text-align: left;
+  position: absolute;
+  top: 80%;
+  left: 10%;
+  right: 10%;
+  z-index: 1000;
+  font-size: 5vh;
+  font-family: "Roboto Slab", Helvetica;
+  opacity: 0.9;
+  overflow-y: scroll;
+}
+
+#captioned-text::-webkit-scrollbar { 
+  display: none; 
+}
+
+#captioned-text p {
+  display: inline-block;
+  background-color: black;
+  color: white;
+  padding: 0.2em;
+}
+
+#interim_text {
+  color: rgb(200,200,200);
+}
+
+.info-upgrade {
+    position: absolute;
+    top: 100px;
+    width: 100%;
+    border: 2px solid black;
+    padding: 50px;
+    background-color: white;
+    color: black;
+}

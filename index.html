@@ -1,124 +1,47 @@
 <!DOCTYPE html>
-<!-- cribbed extensively from https://www.google.com/intl/en/chrome/demos/speech.html -->
 <html lang="en" id="mac"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-
+<!-- cribbed extensively from https://www.google.com/intl/en/chrome/demos/speech.html -->
+  <head>
+    
     <title>
-      Speech-to-Pictogram
+      Pictogram Demo
     </title>
-
-    <style>
-    body, html {
-      height: 100%;
-    }
-
-    body {
-      padding: 0;
-      margin: 0;
-      background-color: black;
-      color: #fff;
-    }
-
-    .interim {
-      color: #999;
-    }
-
-    .carousel {
-      height: 100vh;
-      text-align: center;
-      width: 100%;
-    }
-
-    .carousel-cell {
-      text-align: center;
-      height: 100vh;
-      margin: 0;
-      width: 100%;
-      background-size: cover;
-      background-repeat: no-repeat;
-      background-position: center center;
-    }
-
-    .carousel-cell img {
-      max-width: 100%;
-      height: auto;
-    }
-
-    .caption {
-      text-align: center;
-      text-transform: uppercase;
-      margin-top: 0.5em;
-      position: absolute;
-      top: 6%;
-      left: 0;
-      right: 0;
-    }
-
-    .caption span {
-      font-family: "League Gothic", LeagueGothic, Helvetica;
-      font-size: 15vh;
-      background-color: rgba(0,0,0,0.5);
-      color: white;
-      padding: 0.2em;
-      display: inline-block;
-    }
-
-    #captioned-text {
-      text-align: left;
-      position: absolute;
-      top: 80%;
-      left: 10%;
-      right: 10%;
-      z-index: 1000;
-      font-size: 5vh;
-      font-family: "Roboto Slab", Helvetica;
-      opacity: 0.9;
-      overflow-y: scroll;
-    }
-
-    #captioned-text::-webkit-scrollbar { 
-      display: none; 
-    }
-
-    #captioned-text p {
-      display: inline-block;
-      background-color: black;
-      color: white;
-      padding: 0.2em;
-    }
-
-    #interim_text {
-      color: rgb(200,200,200);
-    }
-
-    </style>
-
+    
     <!-- Hide referrer so we don't get dinged for hotlinking directly to images -->
     <meta name="referrer" content="no-referrer" />
 
+    <link rel="stylesheet" href="https://unpkg.com/flickity@2/dist/flickity.min.css">
+
     <!-- Load jQuery -->
     <script
-  src="https://code.jquery.com/jquery-3.2.1.min.js"
-  integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
-  crossorigin="anonymous"></script>
+      src="https://code.jquery.com/jquery-3.2.1.min.js"
+      integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
+      crossorigin="anonymous"></script>
 
     <!-- Load NLP -->
-    <script src="compromise/builds/compromise.min.js"></script>
+    <script src="node_modules/compromise/builds/compromise.min.js"></script>
 
     <!-- Load Slideshow -->
     <link rel="stylesheet" href="https://unpkg.com/flickity@2/dist/flickity.min.css">
     <script src="https://unpkg.com/flickity@2/dist/flickity.pkgd.min.js"></script>
-
 
     <link href="https://fonts.googleapis.com/css?family=Roboto+Slab" rel="stylesheet">
 
   </head>
 
   <body id="grid" onload="start(event)">
-
-    <div id="carousel" class="carousel">
-      <div class="carousel-cell" style="background-image:url('http://printablecalendartemplates.com/wp-content/uploads/2017/03/81a888a2ea68188a95f60475746e8403.jpg');"><div class="caption"><span>Improvisational PowerPoint</span></div></div>
+    
+    <div class="info-upgrade" style="display: none">
+      <p>I'm sorry! This demo only works on Chrome desktops (because it offers the <a href="http://caniuse.com/#feat=speech-recognition">SpeechRecognition API</a>).
+      </p>
     </div>
-
+    
+    <!-- Dummy first slide with quick background image -->
+    <div id="carousel" class="carousel">
+      <div class="carousel-cell"    style="background-image:url('https://printablecalendartemplates.com/wp-content/uploads/2017/03/81a888a2ea68188a95f60475746e8403.jpg');"><div class="caption"><span>Improvisational PowerPoint</span></div></div>
+    </div>
+    
+    <!-- DOM holder for transcribed text -->
     <div id="captioned-text">
       <p><span class="final" id="final_text"></span> <span class="interim" id="interim_text"></span></p>
     </div>
@@ -197,36 +120,39 @@ if (!('webkitSpeechRecognition' in window)) {
         var confidence = event.results[i][0].confidence;
         var phrase = event.results[i][0].transcript; 
 
-        interim_transcript += event.results[i][0].transcript;        
+        interim_transcript += event.results[i][0].transcript;
+        // we go ahead and search for interim phrases, because it's faster that way. 
+        // If we wait for just final phrases, the system will feel too slow.      
         debounce( function(){ process_new_phrase( interim_transcript ); }, 350, false )();  
 
       }
     }
-    
     $('#final_text').html(final_transcript);
     $('#interim_text').html(interim_transcript);
 
     var caption_text = document.getElementById('captioned-text');
     caption_text.scrollTop = caption_text.scrollHeight;
-
-
   };
 }
 
+// Handle a phrase that needs a photo. 
 function process_new_phrase( phrase ) {
 
   console.log('processing', phrase);
-
+  
+  // filter the words against the NLP; come back with a good searchable term
   var term = filter_word( phrase );
   if ( !term ) return false;
-
+  
+  // don't show the same term twice in a row
   if ( !deduplicate_term( term ) ) return false;
 
-  // add this term to the list
+  // add this term to the master list (so we don't show them more than once in quick succession)
   all_phrases.push( term );
 
-  console.log('finding image:', term, 'via phrase', phrase);
-
+  console.log('finding image: ', term, 'via phrase: ', phrase);
+  
+  // get the photo from Flickr 
   $.getJSON( "https://api.flickr.com/services/rest/", 
             { method: 'flickr.photos.search',
               api_key: '43cc03eb3467195ae9b8ec35d994d379',
@@ -238,40 +164,17 @@ function process_new_phrase( phrase ) {
               nojsoncallback: 1
             },
             function( data ) {
-                                if (typeof data.photos !== 'undefined') { 
-                                  var photo = data.photos.photo[0];
+                if (typeof data.photos !== 'undefined') { 
+                  var photo = data.photos.photo[0];
+                  
+                  // build the URL to the Flickr JPEG
+                  var url = "https://farm" + photo.farm + ".staticflickr.com/" + photo.server + "/" + photo.id + "_" + photo.secret + "_z.jpg";
 
-                                  var url = "https://farm" + photo.farm + ".staticflickr.com/" + photo.server + "/" + photo.id + "_" + photo.secret + "_z.jpg";
-
-                                  // add this to the slideshow
-                                  add_image(url, term);
-                                }
-                              }
+                  // add this to the slideshow
+                  add_image(url, term);
+                }
+              }
             );
-
-
-  // Google Custom Search Engine option
-
-  // var google_api = 'xxx';
-  // var google_cse = 'xxx';
-
-  // $.getJSON( "https://www.googleapis.com/customsearch/v1", 
-  //           { q: term,
-  //             cx: google_cse,
-  //             imgSize: 'xlarge',
-  //             safe: 'high',
-  //             searchType: 'image',
-  //             key: google_api,
-  //             num: 1
-  //           },
-  //           function( data ) {
-  //   if (typeof data.items !== 'undefined') { 
-  //     var url = data.items[0].link;
-  //     // add this to the slideshow
-  //     add_image(url, term);
-  //   }
-  // });
-
 }
 
 
@@ -279,6 +182,10 @@ function process_new_phrase( phrase ) {
 // be triggered. The function will be called after it stops being called for
 // N milliseconds. If `immediate` is passed, trigger the function on the
 // leading edge, instead of the trailing.
+
+// This is usually used in the context of a callback, so it doesn't work well here unless we 
+// explicitly declare timeout as a global variable. That's a little bit icky, because it means
+// that debounce() can only be used for one timer and not multiples.
 
 var timeout;
 
@@ -297,16 +204,18 @@ function debounce(func, wait, immediate) {
 };
 
 
+// Take a phrase and filter just the words we want
+// 
 function filter_word( phrase ) {
 
   if (!phrase) return false;
 
-  // get the topics, then nouns from the phrase
+  // using Compromise, get the topics, then nouns from the phrase
   var phrases = nlp(phrase);
   if ( !phrases ) return phrase;
 
   var topics = phrases.topics().out('array');
-  if ( topics.length ) return topics.slice(-1)[0]; // return the final element of the array
+  if ( topics.length ) return topics.slice(-1)[0]; // return the final element of the array; the final phrase spoken
   
   var nouns = phrases.nouns().out('array');
   if ( nouns.length ) return nouns.slice(-1)[0];
@@ -315,6 +224,7 @@ function filter_word( phrase ) {
 }
 
 
+// filter out the garbage and the duplicates
 function deduplicate_term( term ) {
 
   // must be at least three characters
@@ -342,7 +252,7 @@ function deduplicate_term( term ) {
   return true;
 }
 
-
+// add an image to the slideshow and display it
 function add_image(url, phrase) {
   
   var $slide = $('<div class="carousel-cell" style="background-image: url(' + url + ');"><div class="caption"><span>' + phrase + '</span></div></div>');
@@ -350,7 +260,7 @@ function add_image(url, phrase) {
 
 }
 
-
+// use spacebar to show/hide captioned text
 $( document ).keypress(function( event ) {
   // console.log(event.which);
   if ( event.which == 99 ) {
@@ -360,4 +270,5 @@ $( document ).keypress(function( event ) {
 
 </script>
 
-</body></html>
+</body>
+</html>
