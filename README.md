@@ -6,7 +6,7 @@ A [demo](https://jimwebb.com/pictogram/) for [Hack and Tell DC](http://dc.hackan
 
 - Creates a closed-captioning-style transcript of the words spoken
 - A [Natural Language Processing library](http://compromise.cool/) plucks out interesting topics or nouns
-- A background image is created from those nouns via the [Flickr API](https://www.flickr.com/services/api/)
+- A background image is created from those nouns via a call to the [Flickr API](https://www.flickr.com/services/api/)
 
 ## Live Demo
 [https://jimwebb.com/pictogram/](https://jimwebb.com/pictogram/) 
